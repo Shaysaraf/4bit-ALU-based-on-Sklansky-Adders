@@ -1,0 +1,11 @@
+module black_cell (
+    input  wire g_ik,
+    input  wire p_ik,
+    input  wire g_kj,
+    input  wire p_kj,
+    output wire g_ij,
+    output wire p_ij
+);
+    assign g_ij = g_ik | (p_ik & g_kj);
+    assign p_ij = p_ik & p_kj;
+endmodule
