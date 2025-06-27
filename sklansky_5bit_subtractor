@@ -1,0 +1,52 @@
+module sklansky_5bit_subtractor(
+    input  wire [4:0] X,
+    input  wire [3:0] C,
+    output wire [5:0] Y
+);
+
+    // Transfering the 4-bit 'C' to 5-bit '- C - 1'
+    wire [4:0] C_star = {C[3], C};
+    wire [4:0] C_neg = ~C_star; 
+    wire [4:0] p, g;
+    wire [4:0] c;
+
+    // Instantiate prop_gen modules
+    prop_gen pg0 (.a(X[0]), .b(C_neg[0]), .p(p[0]), .g(g[0])); 
+    prop_gen pg1 (.a(X[1]), .b(C_neg[1]), .p(p[1]), .g(g[1]));
+    prop_gen pg2 (.a(X[2]), .b(C_neg[2]), .p(p[2]), .g(g[2]));
+    prop_gen pg3 (.a(X[3]), .b(C_neg[3]), .p(p[3]), .g(g[3]));
+    prop_gen pg4 (.a(X[4]), .b(C_neg[4]), .p(p[4]), .g(g[4]));
+    
+    //optimized grey-cell due to a constant carry in of Vdd
+    wire g0_0 = p[0] | g[0];
+    assign c[0] = g0_0;
+    
+    wire g1_0;
+    grey_cell gc1_0 (.g_ik(g[1]), .p_ik(p[1]), .g_kj(g0_0), .g_ij(g1_0));
+    assign c[1] = g1_0;
+    
+    wire g2_1, p2_1;
+    black_cell bc2_1 (.g_ik(g[2]), .p_ik(p[2]), .g_kj(g[1]), .p_kj(p[1]), .g_ij(g2_1), .p_ij(p2_1));
+    wire g2_0;
+    grey_cell gc2_0 (.g_ik(g2_1), .p_ik(p2_1), .g_kj(g1_0), .g_ij(g2_0));
+    assign c[2] = g2_0;
+    
+    wire g3_0;
+    grey_cell gc3_0 (.g_ik(g[3]), .p_ik(p[3]), .g_kj(g2_0), .g_ij(g3_0));
+    assign c[3] = g3_0;
+    
+    wire g4_3, p4_3;
+    black_cell bc4_3 (.g_ik(g[4]), .p_ik(p[4]), .g_kj(g[3]), .p_kj(p[3]), .g_ij(g4_3), .p_ij(p4_3));
+    wire g4_0;
+    grey_cell gc4_0 (.g_ik(g4_3), .p_ik(p4_3), .g_kj(g2_0), .g_ij(g4_0));
+    assign c[4] = g4_0;
+    
+    // Sum bits
+    assign Y[0] = ~p[0];  //optimized XOR due to a constant carry in of Vdd
+    assign Y[1] = p[1] ^ c[0];
+    assign Y[2] = p[2] ^ c[1];
+    assign Y[3] = p[3] ^ c[2];
+    assign Y[4] = p[4] ^ c[3]; 
+    assign Y[5] = p[4] ^ c[4]; // MSB carry (for signed result)
+
+endmodule
