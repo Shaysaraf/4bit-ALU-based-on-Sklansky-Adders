@@ -1,0 +1,8 @@
+module grey_cell (
+    input  wire g_ik,
+    input  wire p_ik,
+    input  wire g_kj,
+    output wire g_ij
+);
+    assign g_ij = g_ik | (p_ik & g_kj);
+endmodule
