@@ -1,0 +1,7 @@
+module prop_gen(
+    input  wire a, b,
+    output wire p, g
+);
+    assign p = a ^ b; // propagate
+    assign g = a & b; // generate 
+endmodule
